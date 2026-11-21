@@ -5,16 +5,21 @@
 #include <vector>
 #include "Obiekt.h"
 #include "Rezerwacja.h"
+#include "BladRezerwacji.h"
 using namespace std;
 
 // glowna klasa programu: zarzadza miejscami (przez Obiekt) i rezerwacjami
+// gdy cos sie nie uda, metody rzucaja wyjatek BladRezerwacji
 class SystemRezerwacji {
 private:
     Obiekt* obiekt;                // autobus, kino albo stadion
     vector<Rezerwacja> rezerwacje; // wszystkie rezerwacje
     int nastepnyNumer;             // numer dla nastepnej rezerwacji
 
-    int znajdzIndeks(int numer) const; // gdzie w wektorze jest rezerwacja (-1 gdy brak)
+    // gdzie w wektorze jest rezerwacja (wyjatek gdy jej nie ma)
+    int znajdzIndeks(int numer) const;
+    // sprawdza czy numer rodzaju biletu jest dobry (wyjatek gdy nie)
+    void sprawdzTypBiletu(int typBiletu) const;
 
 public:
     SystemRezerwacji(Obiekt* obiekt);
@@ -27,6 +32,7 @@ public:
     string getNazwaObiektu() const;
     vector<string> getTypyBiletow() const;
     string getPrzykladMiejsca() const;
+    double getCena(string oznaczenie, int typBiletu) const;
 
     // sektory (maja je tylko niektore obiekty, np. stadion)
     bool maWyborSektora() const;
@@ -35,26 +41,23 @@ public:
     void pokazMiejsca() const;
     void pokazSektor(int sektor) const;
 
-    // zamienia wpis uzytkownika na oznaczenie miejsca, "" gdy zly format
+    // zamienia wpis uzytkownika na oznaczenie miejsca
+    // wyjatek gdy wpis ma zly format
     string przygotujOznaczenie(string wpis, int sektor) const;
 
-    // 1 - miejsce wolne, 0 - takiego miejsca nie ma, -1 - miejsce zajete
-    int sprawdzMiejsce(string oznaczenie) const;
+    // wyjatek gdy miejsca nie ma albo jest zajete
+    void sprawdzMiejsce(string oznaczenie) const;
 
-    // oznaczenie musi byc juz poprawne (z przygotujOznaczenie)
-    // zwraca numer rezerwacji (> 0), 0 gdy nie ma takiego miejsca, -1 gdy miejsce zajete
-    int zarezerwuj(string oznaczenie, string imieKlienta, string typBiletu);
+    // typBiletu to numer rodzaju biletu od 0
+    // zwraca numer rezerwacji, wyjatek gdy miejsce zle albo zajete
+    int zarezerwuj(string oznaczenie, string imieKlienta, int typBiletu);
 
-    // zwraca true jesli rezerwacja istniala i zostala anulowana
-    bool anuluj(int numer);
-
-    // wyswietla rezerwacje o danym numerze, zwraca false gdy jej nie ma
-    bool szukajRezerwacji(int numer) const;
+    // wyjatek gdy nie ma rezerwacji o takim numerze
+    void anuluj(int numer);
+    const Rezerwacja& znajdzRezerwacje(int numer) const;
+    void zmienDane(int numer, string noweImie, int nowyTypBiletu);
 
     void pokazRezerwacje() const;
-
-    // zmienia imie i bilet w rezerwacji, zwraca false gdy nie ma takiej rezerwacji
-    bool zmienDane(int numer, string noweImie, string nowyTypBiletu);
 };
 
 #endif

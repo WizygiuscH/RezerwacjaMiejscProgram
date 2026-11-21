@@ -19,8 +19,9 @@ int Obiekt::getLiczbaMiejsc() const {
 
 // przechodzimy po wszystkich miejscach i szukamy takiego samego oznaczenia
 Miejsce* Obiekt::znajdzMiejsce(string oznaczenie) {
+    Miejsce szukane(oznaczenie);
     for (int i = 0; i < (int)miejsca.size(); i++) {
-        if (miejsca[i].getOznaczenie() == oznaczenie) {
+        if (miejsca[i] == szukane) { // uzywamy naszego operatora ==
             return &miejsca[i];
         }
     }
@@ -29,8 +30,9 @@ Miejsce* Obiekt::znajdzMiejsce(string oznaczenie) {
 
 // to samo, ale dla obiektu, ktorego nie chcemy zmieniac (const)
 const Miejsce* Obiekt::znajdzMiejsce(string oznaczenie) const {
+    Miejsce szukane(oznaczenie);
     for (int i = 0; i < (int)miejsca.size(); i++) {
-        if (miejsca[i].getOznaczenie() == oznaczenie) {
+        if (miejsca[i] == szukane) {
             return &miejsca[i];
         }
     }

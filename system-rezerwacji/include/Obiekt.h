@@ -43,6 +43,10 @@ public:
     // przyklad miejsca do podpowiedzi dla uzytkownika
     virtual string getPrzykladMiejsca() const = 0;
 
+    // cena biletu: kazdy obiekt liczy ja po swojemu
+    // typBiletu to numer rodzaju biletu od 0 (tak jak na liscie typyBiletow)
+    virtual double getCena(string oznaczenie, int typBiletu) const = 0;
+
     // sektory: domyslnie obiekt nie ma wyboru sektora (tylko stadion ma)
     virtual bool maWyborSektora() const;
     virtual vector<string> getNazwySektorow() const;

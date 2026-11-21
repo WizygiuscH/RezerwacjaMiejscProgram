@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <cstdlib>
 #include "Autobus.h"
@@ -53,16 +54,17 @@ string wczytajTekst(string pytanie) {
     }
 }
 
-// pokazuje rodzaje biletow i zwraca nazwe wybranego
-string wybierzTypBiletu(const SystemRezerwacji& sr) {
+// pokazuje rodzaje biletow z cenami dla tego miejsca
+// zwraca numer wybranego rodzaju biletu (od 0)
+int wybierzTypBiletu(const SystemRezerwacji& sr, string oznaczenie) {
     vector<string> bilety = sr.getTypyBiletow();
 
     cout << "\nWybierz rodzaj biletu:\n";
     for (int i = 0; i < (int)bilety.size(); i++) {
-        cout << i + 1 << ". " << bilety[i] << "\n";
+        cout << i + 1 << ". " << bilety[i] << " - " << sr.getCena(oznaczenie, i) << " zl\n";
     }
     int wybor = wczytajWybor(1, bilety.size());
-    return bilety[wybor - 1];
+    return wybor - 1;
 }
 
 // pokazuje sektory (stadion) i zwraca numer wybranego, albo -1 gdy uzytkownik chce wrocic
@@ -80,7 +82,8 @@ int wybierzSektor(const SystemRezerwacji& sr) {
 }
 
 // pyta o miejsce az uzytkownik poda dobre i wolne
-// zly wpis od razu daje blad i prosi o poprawke
+// system rzuca wyjatek przy zlym wpisie, a my go lapiemy,
+// pokazujemy blad od razu i prosimy o poprawke
 // zwraca gotowe oznaczenie albo "" gdy uzytkownik wpisal 0 (wroc)
 string wybierzMiejsce(const SystemRezerwacji& sr, int sektor) {
     while (true) {
@@ -90,18 +93,12 @@ string wybierzMiejsce(const SystemRezerwacji& sr, int sektor) {
             return "";
         }
 
-        string oznaczenie = sr.przygotujOznaczenie(wpis, sektor);
-        int stan = 0;
-        if (oznaczenie != "") {
-            stan = sr.sprawdzMiejsce(oznaczenie);
-        }
-
-        if (stan == 1) {
+        try {
+            string oznaczenie = sr.przygotujOznaczenie(wpis, sektor);
+            sr.sprawdzMiejsce(oznaczenie);
             return oznaczenie; // dobre i wolne
-        } else if (stan == -1) {
-            cout << "BLAD: miejsce " << oznaczenie << " jest juz zajete, wybierz inne.\n";
-        } else {
-            cout << "BLAD: takie miejsce nie istnieje, sprobuj jeszcze raz.\n";
+        } catch (const BladRezerwacji& blad) {
+            cout << "BLAD: " << blad.what() << ", sprobuj jeszcze raz.\n";
         }
     }
 }
@@ -125,54 +122,40 @@ void zarezerwujMiejsce(SystemRezerwacji& sr) {
     }
 
     string imie = wczytajTekst("Podaj imie klienta: ");
-    string bilet = wybierzTypBiletu(sr);
+    int bilet = wybierzTypBiletu(sr, oznaczenie);
 
-    int wynik = sr.zarezerwuj(oznaczenie, imie, bilet);
-    if (wynik > 0) {
-        cout << "\nZarezerwowano miejsce " << oznaczenie
-             << "! Numer rezerwacji: " << wynik << "\n";
-    } else {
-        cout << "\nNie udalo sie zarezerwowac miejsca.\n";
-    }
+    int numer = sr.zarezerwuj(oznaczenie, imie, bilet);
+    cout << "\nZarezerwowano!\n" << sr.znajdzRezerwacje(numer) << "\n";
 }
 
 void anulujRezerwacje(SystemRezerwacji& sr) {
     cout << "\nPodaj numer rezerwacji do anulowania.\n";
     int numer = wczytajWybor(1, 999999);
 
-    if (sr.anuluj(numer)) {
-        cout << "Rezerwacja nr " << numer << " zostala anulowana.\n";
-    } else {
-        cout << "Nie ma rezerwacji o takim numerze.\n";
-    }
+    sr.anuluj(numer); // gdy nie ma takiej rezerwacji, poleci wyjatek
+    cout << "Rezerwacja nr " << numer << " zostala anulowana.\n";
 }
 
 void szukajRezerwacji(const SystemRezerwacji& sr) {
     cout << "\nPodaj numer rezerwacji.\n";
     int numer = wczytajWybor(1, 999999);
 
-    cout << "\n";
-    if (!sr.szukajRezerwacji(numer)) {
-        cout << "Nie ma rezerwacji o takim numerze.\n";
-    }
+    cout << "\n" << sr.znajdzRezerwacje(numer) << "\n";
 }
 
 void zmienDaneRezerwacji(SystemRezerwacji& sr) {
     cout << "\nPodaj numer rezerwacji do zmiany.\n";
     int numer = wczytajWybor(1, 999999);
 
-    // najpierw sprawdzamy czy rezerwacja istnieje (i pokazujemy ja)
-    cout << "\nObecne dane:\n";
-    if (!sr.szukajRezerwacji(numer)) {
-        cout << "Nie ma rezerwacji o takim numerze.\n";
-        return;
-    }
+    // najpierw pokazujemy obecne dane (gdy nie ma rezerwacji, poleci wyjatek)
+    const Rezerwacja& rezerwacja = sr.znajdzRezerwacje(numer);
+    cout << "\nObecne dane:\n" << rezerwacja << "\n";
 
     string noweImie = wczytajTekst("\nPodaj nowe imie klienta: ");
-    string nowyBilet = wybierzTypBiletu(sr);
+    int nowyBilet = wybierzTypBiletu(sr, rezerwacja.getOznaczenieMiejsca());
 
     sr.zmienDane(numer, noweImie, nowyBilet);
-    cout << "\nDane rezerwacji zostaly zmienione.\n";
+    cout << "\nDane rezerwacji zostaly zmienione:\n" << sr.znajdzRezerwacje(numer) << "\n";
 }
 
 void wyswietlMenu(string nazwaObiektu) {
@@ -193,18 +176,29 @@ void obslugaObiektu(SystemRezerwacji& sr) {
         wyswietlMenu(sr.getNazwaObiektu());
         wybor = wczytajWybor(0, 6);
 
-        switch (wybor) {
-            case 1: sr.pokazMiejsca(); break;
-            case 2: zarezerwujMiejsce(sr); break;
-            case 3: anulujRezerwacje(sr); break;
-            case 4: sr.pokazRezerwacje(); break;
-            case 5: szukajRezerwacji(sr); break;
-            case 6: zmienDaneRezerwacji(sr); break;
+        // kazda opcja moze rzucic wyjatek, wiec lapiemy go tutaj
+        // i program nie konczy sie bledem, tylko pokazuje komunikat
+        try {
+            switch (wybor) {
+                case 1: sr.pokazMiejsca(); break;
+                case 2: zarezerwujMiejsce(sr); break;
+                case 3: anulujRezerwacje(sr); break;
+                case 4: sr.pokazRezerwacje(); break;
+                case 5: szukajRezerwacji(sr); break;
+                case 6: zmienDaneRezerwacji(sr); break;
+            }
+        } catch (const BladRezerwacji& blad) {
+            cout << "\nBLAD: " << blad.what() << "\n";
+        } catch (const exception& blad) {
+            cout << "\nNieoczekiwany blad: " << blad.what() << "\n";
         }
     }
 }
 
 int main() {
+    // ceny wypisujemy z dwoma miejscami po przecinku (np. 22.40)
+    cout << fixed << setprecision(2);
+
     // wszystkie trzy systemy tworzymy od razu,
     // zeby rezerwacje nie znikaly, gdy wrocimy do wyboru typu miejsca
     // (wskaznik Obiekt* w systemie pokazuje na autobus, kino albo stadion - polimorfizm)

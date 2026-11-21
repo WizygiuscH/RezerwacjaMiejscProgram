@@ -30,6 +30,7 @@ public:
     void wyswietlSektor(int sektor) const override;
     string przygotujOznaczenie(string wpis, int sektor) const override;
     string getPrzykladMiejsca() const override;
+    double getCena(string oznaczenie, int typBiletu) const override;
     bool maWyborSektora() const override;
     vector<string> getNazwySektorow() const override;
 };

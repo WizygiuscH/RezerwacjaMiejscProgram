@@ -62,3 +62,12 @@ string Autobus::przygotujOznaczenie(string wpis, int) const {
 string Autobus::getPrzykladMiejsca() const {
     return "4C";
 }
+
+// autobus: bilet normalny 12 zl, ulgowy to polowa ceny
+double Autobus::getCena(string, int typBiletu) const {
+    double cena = 12.00;
+    if (typBiletu == 1) {
+        cena = cena * 0.5; // bilet ulgowy
+    }
+    return cena;
+}

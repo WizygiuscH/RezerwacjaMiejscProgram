@@ -10,7 +10,7 @@
         "-Iinclude",
         "src/main.cpp", "src/Miejsce.cpp", "src/Rezerwacja.cpp",
         "src/Obiekt.cpp", "src/Autobus.cpp", "src/Kino.cpp", "src/Stadion.cpp",
-        "src/SystemRezerwacji.cpp",
+        "src/SystemRezerwacji.cpp", "src/BladRezerwacji.cpp",
         "-o", "rezerwacje"
       ],
       "options": { "cwd": "${workspaceFolder}" },

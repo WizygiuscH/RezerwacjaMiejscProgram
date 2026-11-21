@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include "SystemRezerwacji.h"
 using namespace std;
 
@@ -11,14 +13,21 @@ SystemRezerwacji::~SystemRezerwacji() {
     delete obiekt;
 }
 
-// szuka rezerwacji po numerze, zwraca jej miejsce w wektorze albo -1
+// szuka rezerwacji po numerze, zwraca jej miejsce w wektorze
+// gdy jej nie ma, rzuca wyjatek
 int SystemRezerwacji::znajdzIndeks(int numer) const {
     for (int i = 0; i < (int)rezerwacje.size(); i++) {
         if (rezerwacje[i].getNumer() == numer) {
             return i;
         }
     }
-    return -1;
+    throw BladRezerwacji("nie ma rezerwacji o numerze " + to_string(numer));
+}
+
+void SystemRezerwacji::sprawdzTypBiletu(int typBiletu) const {
+    if (typBiletu < 0 || typBiletu >= (int)obiekt->getTypyBiletow().size()) {
+        throw BladRezerwacji("taki rodzaj biletu nie istnieje");
+    }
 }
 
 string SystemRezerwacji::getNazwaObiektu() const {
@@ -31,6 +40,11 @@ vector<string> SystemRezerwacji::getTypyBiletow() const {
 
 string SystemRezerwacji::getPrzykladMiejsca() const {
     return obiekt->getPrzykladMiejsca();
+}
+
+// kazdy obiekt liczy cene po swojemu (polimorfizm)
+double SystemRezerwacji::getCena(string oznaczenie, int typBiletu) const {
+    return obiekt->getCena(oznaczenie, typBiletu);
 }
 
 bool SystemRezerwacji::maWyborSektora() const {
@@ -51,42 +65,41 @@ void SystemRezerwacji::pokazSektor(int sektor) const {
 }
 
 string SystemRezerwacji::przygotujOznaczenie(string wpis, int sektor) const {
-    return obiekt->przygotujOznaczenie(wpis, sektor);
+    string oznaczenie = obiekt->przygotujOznaczenie(wpis, sektor);
+    if (oznaczenie == "") {
+        throw BladRezerwacji("zly format miejsca, wpisz np. " + obiekt->getPrzykladMiejsca());
+    }
+    return oznaczenie;
 }
 
-int SystemRezerwacji::sprawdzMiejsce(string oznaczenie) const {
+void SystemRezerwacji::sprawdzMiejsce(string oznaczenie) const {
     const Miejsce* miejsce = obiekt->znajdzMiejsce(oznaczenie);
     if (miejsce == nullptr) {
-        return 0; // takiego miejsca nie ma
+        throw BladRezerwacji("takie miejsce nie istnieje");
     }
     if (miejsce->czyZajete()) {
-        return -1; // miejsce zajete
+        throw BladRezerwacji("miejsce " + oznaczenie + " jest juz zajete");
     }
-    return 1; // wolne
 }
 
-int SystemRezerwacji::zarezerwuj(string oznaczenie, string imieKlienta, string typBiletu) {
-    Miejsce* miejsce = obiekt->znajdzMiejsce(oznaczenie);
-    if (miejsce == nullptr) {
-        return 0; // takiego miejsca nie ma
-    }
-    if (miejsce->czyZajete()) {
-        return -1; // miejsce juz zajete
-    }
+int SystemRezerwacji::zarezerwuj(string oznaczenie, string imieKlienta, int typBiletu) {
+    // najpierw sprawdzamy wszystko, dopiero potem zmieniamy dane
+    sprawdzMiejsce(oznaczenie);
+    sprawdzTypBiletu(typBiletu);
 
-    miejsce->zajmij();
+    obiekt->znajdzMiejsce(oznaczenie)->zajmij();
+
+    string nazwaBiletu = obiekt->getTypyBiletow()[typBiletu];
+    double cena = obiekt->getCena(oznaczenie, typBiletu);
 
     int numer = nastepnyNumer;
-    rezerwacje.push_back(Rezerwacja(numer, imieKlienta, oznaczenie, typBiletu));
+    rezerwacje.push_back(Rezerwacja(numer, imieKlienta, oznaczenie, nazwaBiletu, cena));
     nastepnyNumer++;
     return numer;
 }
 
-bool SystemRezerwacji::anuluj(int numer) {
-    int indeks = znajdzIndeks(numer);
-    if (indeks == -1) {
-        return false; // nie ma takiej rezerwacji
-    }
+void SystemRezerwacji::anuluj(int numer) {
+    int indeks = znajdzIndeks(numer); // rzuci wyjatek gdy nie ma rezerwacji
 
     // zwalniamy miejsce, ktore bylo zarezerwowane
     Miejsce* miejsce = obiekt->znajdzMiejsce(rezerwacje[indeks].getOznaczenieMiejsca());
@@ -96,16 +109,21 @@ bool SystemRezerwacji::anuluj(int numer) {
 
     // usuwamy rezerwacje z listy
     rezerwacje.erase(rezerwacje.begin() + indeks);
-    return true;
 }
 
-bool SystemRezerwacji::szukajRezerwacji(int numer) const {
+const Rezerwacja& SystemRezerwacji::znajdzRezerwacje(int numer) const {
+    return rezerwacje[znajdzIndeks(numer)];
+}
+
+void SystemRezerwacji::zmienDane(int numer, string noweImie, int nowyTypBiletu) {
     int indeks = znajdzIndeks(numer);
-    if (indeks == -1) {
-        return false;
-    }
-    rezerwacje[indeks].wyswietl();
-    return true;
+    sprawdzTypBiletu(nowyTypBiletu);
+
+    Rezerwacja& rezerwacja = rezerwacje[indeks];
+    rezerwacja.setImieKlienta(noweImie);
+    rezerwacja.setTypBiletu(obiekt->getTypyBiletow()[nowyTypBiletu]);
+    // zmiana biletu to zmiana ceny
+    rezerwacja.setCena(obiekt->getCena(rezerwacja.getOznaczenieMiejsca(), nowyTypBiletu));
 }
 
 void SystemRezerwacji::pokazRezerwacje() const {
@@ -114,19 +132,15 @@ void SystemRezerwacji::pokazRezerwacje() const {
         return;
     }
 
+    double suma = 0;
     cout << "\n=== LISTA REZERWACJI ===\n";
     for (int i = 0; i < (int)rezerwacje.size(); i++) {
-        rezerwacje[i].wyswietl();
+        cout << rezerwacje[i] << "\n"; // nasz operator <<
+        suma = suma + rezerwacje[i].getCena();
     }
-    cout << "Razem rezerwacji: " << rezerwacje.size() << "\n";
-}
 
-bool SystemRezerwacji::zmienDane(int numer, string noweImie, string nowyTypBiletu) {
-    int indeks = znajdzIndeks(numer);
-    if (indeks == -1) {
-        return false;
-    }
-    rezerwacje[indeks].setImieKlienta(noweImie);
-    rezerwacje[indeks].setTypBiletu(nowyTypBiletu);
-    return true;
+    ostringstream tekstSumy;
+    tekstSumy << fixed << setprecision(2) << suma;
+    cout << "Razem rezerwacji: " << rezerwacje.size()
+         << ", laczna wartosc: " << tekstSumy.str() << " zl\n";
 }

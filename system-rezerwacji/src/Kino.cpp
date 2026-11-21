@@ -44,11 +44,8 @@ void Kino::wyswietlMiejsca() const {
 
         for (int numer = 0; numer < 10; numer++) {
             // rzad * 10 + numer to numer miejsca w wektorze
-            if (miejsca[rzad * 10 + numer].czyZajete()) {
-                cout << "[x] ";
-            } else {
-                cout << "[o] ";
-            }
+            // operator << sam wypisze [o] albo [x]
+            cout << miejsca[rzad * 10 + numer] << " ";
         }
         cout << "\n";
     }
@@ -70,4 +67,17 @@ string Kino::przygotujOznaczenie(string wpis, int) const {
 
 string Kino::getPrzykladMiejsca() const {
     return "C8";
+}
+
+// kino: bilet normalny 28 zl, a ulgi to znizki od tej ceny
+double Kino::getCena(string, int typBiletu) const {
+    double cena = 28.00;
+    if (typBiletu == 1) {
+        cena = cena * 0.8; // bilet ulgowy (-20%)
+    } else if (typBiletu == 2) {
+        cena = cena * 0.6; // bilet dla dzieci (-40%)
+    } else if (typBiletu == 3) {
+        cena = cena * 0.7; // bilet dla seniorow (-30%)
+    }
+    return cena;
 }

@@ -31,3 +31,16 @@ void Miejsce::zajmij() {
 void Miejsce::zwolnij() {
     zajete = false;
 }
+
+bool operator==(const Miejsce& a, const Miejsce& b) {
+    return a.getOznaczenie() == b.getOznaczenie();
+}
+
+ostream& operator<<(ostream& os, const Miejsce& miejsce) {
+    if (miejsce.czyZajete()) {
+        os << "[x]";
+    } else {
+        os << "[o]";
+    }
+    return os;
+}

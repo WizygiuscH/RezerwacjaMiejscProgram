@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "Stadion.h"
 using namespace std;
 
@@ -64,16 +65,14 @@ string Stadion::tytulSektora(int sektor) const {
 // jeden rzad miejsc z sektora jako tekst, np. "A [o][o][x]..."
 string Stadion::rzadTekst(int sektor, int rzad) const {
     char litera = 'A' + rzad;
-    string tekst = string(1, litera) + " ";
+    ostringstream tekst;
+    tekst << litera << " ";
 
     for (int numer = 0; numer < 10; numer++) {
-        if (miejsca[poczatekSektora(sektor) + rzad * 10 + numer].czyZajete()) {
-            tekst += "[x]";
-        } else {
-            tekst += "[o]";
-        }
+        // operator << sam wypisze [o] albo [x]
+        tekst << miejsca[poczatekSektora(sektor) + rzad * 10 + numer];
     }
-    return tekst;
+    return tekst.str();
 }
 
 // linijka z numerami miejsc (1-10) nad rzedami
@@ -196,4 +195,28 @@ vector<string> Stadion::getNazwySektorow() const {
         lista.push_back(tytulSektora(i) + " - " + to_string(liczbaRzedow[i] * 10) + " miejsc");
     }
     return lista;
+}
+
+// stadion: cena zalezy od sektora (pierwsza litera oznaczenia, np. "N-C7")
+// a ulgi to znizki od tej ceny
+double Stadion::getCena(string oznaczenie, int typBiletu) const {
+    double cena = 70.00; // trybuna polnocna
+
+    if (oznaczenie.size() > 0) {
+        char sektor = oznaczenie[0];
+        if (sektor == 'W' || sektor == 'E') {
+            cena = 90.00; // trybuny boczne sa najdrozsze
+        } else if (sektor == 'S') {
+            cena = 60.00;
+        } else if (sektor == 'G') {
+            cena = 50.00; // sektor gosci
+        }
+    }
+
+    if (typBiletu == 1) {
+        cena = cena * 0.7; // bilet ulgowy (-30%)
+    } else if (typBiletu == 2) {
+        cena = cena * 0.5; // bilet dla dzieci (-50%)
+    }
+    return cena;
 }

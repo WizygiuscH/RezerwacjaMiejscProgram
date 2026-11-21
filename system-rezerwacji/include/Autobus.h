@@ -11,6 +11,7 @@ public:
     void wyswietlMiejsca() const override;
     string przygotujOznaczenie(string wpis, int sektor) const override;
     string getPrzykladMiejsca() const override;
+    double getCena(string oznaczenie, int typBiletu) const override;
 };
 
 #endif

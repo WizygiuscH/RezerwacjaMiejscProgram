@@ -1,6 +1,7 @@
 #ifndef MIEJSCE_H
 #define MIEJSCE_H
 
+#include <iostream>
 #include <string>
 using namespace std;
 
@@ -23,5 +24,11 @@ public:
     void zajmij();
     void zwolnij();
 };
+
+// dwa miejsca sa takie same, gdy maja to samo oznaczenie
+bool operator==(const Miejsce& a, const Miejsce& b);
+
+// wypisuje miejsce jako [o] (wolne) albo [x] (zajete)
+ostream& operator<<(ostream& os, const Miejsce& miejsce);
 
 #endif
