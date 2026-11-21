@@ -17,13 +17,26 @@ Stadion::Stadion() : Obiekt("Stadion") {
     nazwySektorow.push_back("TRYBUNA POLUDNIOWA");
     nazwySektorow.push_back("SEKTOR GOSCI");
 
-    // robimy 500 pustych miejsc (konstruktor domyslny), potem je nazywamy
-    miejsca.resize(500);
+    // ile rzedow ma kazdy sektor (w rzedzie zawsze 10 miejsc)
+    liczbaRzedow.push_back(10); // N - 100 miejsc
+    liczbaRzedow.push_back(10); // W - 100 miejsc
+    liczbaRzedow.push_back(10); // E - 100 miejsc
+    liczbaRzedow.push_back(5);  // S - 50 miejsc
+    liczbaRzedow.push_back(5);  // G - 50 miejsc
 
-    // nazwy miejsc: N-A1, N-A2 ... N-J10, W-A1 ... G-J10
+    // liczymy ile miejsc jest razem
+    int razem = 0;
+    for (int sektor = 0; sektor < 5; sektor++) {
+        razem += liczbaRzedow[sektor] * 10;
+    }
+
+    // robimy puste miejsca (konstruktor domyslny), potem je nazywamy
+    miejsca.resize(razem);
+
+    // nazwy miejsc: N-A1, N-A2 ... N-J10, W-A1 ... G-E10
     int licznik = 0;
     for (int sektor = 0; sektor < 5; sektor++) {
-        for (int rzad = 0; rzad < 10; rzad++) {
+        for (int rzad = 0; rzad < liczbaRzedow[sektor]; rzad++) {
             char litera = 'A' + rzad;
             for (int numer = 1; numer <= 10; numer++) {
                 string oznaczenie = string(1, kody[sektor]) + "-" + litera + to_string(numer);
@@ -34,14 +47,27 @@ Stadion::Stadion() : Obiekt("Stadion") {
     }
 }
 
+// numer pierwszego miejsca danego sektora w wektorze
+int Stadion::poczatekSektora(int sektor) const {
+    int suma = 0;
+    for (int i = 0; i < sektor; i++) {
+        suma += liczbaRzedow[i] * 10;
+    }
+    return suma;
+}
+
+// np. "TRYBUNA POLNOCNA (N)"
+string Stadion::tytulSektora(int sektor) const {
+    return nazwySektorow[sektor] + " (" + kody[sektor] + ")";
+}
+
 // jeden rzad miejsc z sektora jako tekst, np. "A [o][o][x]..."
 string Stadion::rzadTekst(int sektor, int rzad) const {
     char litera = 'A' + rzad;
     string tekst = string(1, litera) + " ";
 
     for (int numer = 0; numer < 10; numer++) {
-        // sektor * 100 + rzad * 10 + numer to numer miejsca w wektorze
-        if (miejsca[sektor * 100 + rzad * 10 + numer].czyZajete()) {
+        if (miejsca[poczatekSektora(sektor) + rzad * 10 + numer].czyZajete()) {
             tekst += "[x]";
         } else {
             tekst += "[o]";
@@ -70,13 +96,11 @@ string Stadion::srodek(string tekst, int szerokosc) const {
     return string(lewo, ' ') + tekst + string(prawo, ' ');
 }
 
-// rysuje jeden sektor na srodku ekranu (uzywamy dla N, S i G)
-void Stadion::wyswietlSektorNaSrodku(int sektor) const {
-    string odstep(23, ' '); // zeby sektor byl na srodku
-
-    cout << odstep << srodek(nazwySektorow[sektor] + " (" + kody[sektor] + ")", 32) << "\n";
+// rysuje jeden sektor (nazwa, numery miejsc i wszystkie rzedy)
+void Stadion::rysujSektor(int sektor, string odstep) const {
+    cout << odstep << srodek(tytulSektora(sektor), 32) << "\n";
     cout << odstep << numeryTekst() << "\n";
-    for (int rzad = 0; rzad < 10; rzad++) {
+    for (int rzad = 0; rzad < liczbaRzedow[sektor]; rzad++) {
         cout << odstep << rzadTekst(sektor, rzad) << "\n";
     }
 }
@@ -96,29 +120,80 @@ void Stadion::wyswietlMiejsca() const {
         "+--------+"
     };
 
-    cout << "\n=== STADION - plan miejsc ===\n";
-    cout << "500 miejsc, 5 sektorow po 100\n\n";
+    string przerwa(14, ' '); // miejsce na boisko miedzy sektorami
 
-    // gora: trybuna polnocna
-    wyswietlSektorNaSrodku(0);
+    cout << "\n=== STADION - plan miejsc ===\n";
+    cout << miejsca.size() << " miejsc, 5 sektorow\n\n";
+
+    // gora: trybuna polnocna (na srodku)
+    rysujSektor(0, string(23, ' '));
     cout << "\n";
 
     // srodek: zachodnia | boisko | wschodnia
-    cout << srodek(nazwySektorow[1] + " (" + kody[1] + ")", 32)
-         << string(14, ' ')
-         << srodek(nazwySektorow[2] + " (" + kody[2] + ")", 32) << "\n";
-    cout << numeryTekst() << string(14, ' ') << numeryTekst() << "\n";
+    cout << srodek(tytulSektora(1), 32) << przerwa << srodek(tytulSektora(2), 32) << "\n";
+    cout << numeryTekst() << przerwa << numeryTekst() << "\n";
     for (int rzad = 0; rzad < 10; rzad++) {
         cout << rzadTekst(1, rzad) << "  " << boisko[rzad] << "  "
              << rzadTekst(2, rzad) << "\n";
     }
     cout << "\n";
 
-    // dol: trybuna poludniowa i sektor gosci
-    wyswietlSektorNaSrodku(3);
-    cout << "\n";
-    wyswietlSektorNaSrodku(4);
+    // dol: poludniowa (pod zachodnia) i sektor gosci (pod wschodnia)
+    cout << srodek(tytulSektora(3), 32) << przerwa << srodek(tytulSektora(4), 32) << "\n";
+    cout << numeryTekst() << przerwa << numeryTekst() << "\n";
+    for (int rzad = 0; rzad < 5; rzad++) {
+        cout << rzadTekst(3, rzad) << przerwa << rzadTekst(4, rzad) << "\n";
+    }
 
     cout << "\n[o] - wolne, [x] - zajete\n";
-    cout << "Np. N-C7 = Trybuna Polnocna, rzad C, miejsce 7\n";
+}
+
+// pokazuje tylko jeden sektor (uzywamy po wybraniu sektora)
+void Stadion::wyswietlSektor(int sektor) const {
+    if (sektor < 0 || sektor >= 5) {
+        return;
+    }
+    cout << "\n";
+    rysujSektor(sektor, "");
+    cout << "\n[o] - wolne, [x] - zajete\n";
+}
+
+// "c7" i "7c" to to samo miejsce, zamieniamy je np. na "N-C7"
+// mozna tez wpisac z literka sektora, np. "N-C7"
+string Stadion::przygotujOznaczenie(string wpis, int sektor) const {
+    if (sektor < 0 || sektor >= 5) {
+        return "";
+    }
+
+    string litery, cyfry;
+    if (!rozbijWpis(wpis, litery, cyfry)) {
+        return "";
+    }
+
+    // jesli uzytkownik wpisal litere sektora na poczatku, to ja pomijamy
+    if (litery.size() == 2 && litery[0] == kody[sektor]) {
+        litery = litery.substr(1);
+    }
+
+    if (litery.size() != 1 || cyfry.size() == 0) {
+        return ""; // musi byc dokladnie jedna litera rzedu i numer miejsca
+    }
+    return string(1, kody[sektor]) + "-" + litery + cyfry;
+}
+
+string Stadion::getPrzykladMiejsca() const {
+    return "C7";
+}
+
+bool Stadion::maWyborSektora() const {
+    return true;
+}
+
+// lista sektorow do wyboru, np. "TRYBUNA POLNOCNA (N) - 100 miejsc"
+vector<string> Stadion::getNazwySektorow() const {
+    vector<string> lista;
+    for (int i = 0; i < 5; i++) {
+        lista.push_back(tytulSektora(i) + " - " + to_string(liczbaRzedow[i] * 10) + " miejsc");
+    }
+    return lista;
 }

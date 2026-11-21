@@ -9,6 +9,8 @@ class Autobus : public Obiekt {
 public:
     Autobus();
     void wyswietlMiejsca() const override;
+    string przygotujOznaczenie(string wpis, int sektor) const override;
+    string getPrzykladMiejsca() const override;
 };
 
 #endif

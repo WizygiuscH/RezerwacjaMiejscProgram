@@ -55,3 +55,19 @@ void Kino::wyswietlMiejsca() const {
 
     cout << "\n[o] - wolne, [x] - zajete\n";
 }
+
+// "c8" i "8c" to to samo miejsce, zamieniamy je na postac "C8" (litera, potem numer)
+string Kino::przygotujOznaczenie(string wpis, int) const {
+    string litery, cyfry;
+    if (!rozbijWpis(wpis, litery, cyfry)) {
+        return "";
+    }
+    if (litery.size() != 1 || cyfry.size() == 0) {
+        return ""; // musi byc dokladnie jedna litera i numer miejsca
+    }
+    return litery + cyfry;
+}
+
+string Kino::getPrzykladMiejsca() const {
+    return "C8";
+}

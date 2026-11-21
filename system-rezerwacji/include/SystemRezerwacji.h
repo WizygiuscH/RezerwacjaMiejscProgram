@@ -14,8 +14,7 @@ private:
     vector<Rezerwacja> rezerwacje; // wszystkie rezerwacje
     int nastepnyNumer;             // numer dla nastepnej rezerwacji
 
-    string naDuzeLitery(string tekst) const; // zeby "4c" tez dzialalo
-    int znajdzIndeks(int numer) const;       // gdzie w wektorze jest rezerwacja (-1 gdy brak)
+    int znajdzIndeks(int numer) const; // gdzie w wektorze jest rezerwacja (-1 gdy brak)
 
 public:
     SystemRezerwacji(Obiekt* obiekt);
@@ -27,9 +26,22 @@ public:
 
     string getNazwaObiektu() const;
     vector<string> getTypyBiletow() const;
+    string getPrzykladMiejsca() const;
+
+    // sektory (maja je tylko niektore obiekty, np. stadion)
+    bool maWyborSektora() const;
+    vector<string> getNazwySektorow() const;
 
     void pokazMiejsca() const;
+    void pokazSektor(int sektor) const;
 
+    // zamienia wpis uzytkownika na oznaczenie miejsca, "" gdy zly format
+    string przygotujOznaczenie(string wpis, int sektor) const;
+
+    // 1 - miejsce wolne, 0 - takiego miejsca nie ma, -1 - miejsce zajete
+    int sprawdzMiejsce(string oznaczenie) const;
+
+    // oznaczenie musi byc juz poprawne (z przygotujOznaczenie)
     // zwraca numer rezerwacji (> 0), 0 gdy nie ma takiego miejsca, -1 gdy miejsce zajete
     int zarezerwuj(string oznaczenie, string imieKlienta, string typBiletu);
 

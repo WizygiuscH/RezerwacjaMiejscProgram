@@ -10,6 +10,8 @@ class Kino : public Obiekt {
 public:
     Kino();
     void wyswietlMiejsca() const override;
+    string przygotujOznaczenie(string wpis, int sektor) const override;
+    string getPrzykladMiejsca() const override;
 };
 
 #endif

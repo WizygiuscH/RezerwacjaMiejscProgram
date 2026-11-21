@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cctype>
 #include "SystemRezerwacji.h"
 using namespace std;
 
@@ -10,14 +9,6 @@ SystemRezerwacji::SystemRezerwacji(Obiekt* obiekt) {
 
 SystemRezerwacji::~SystemRezerwacji() {
     delete obiekt;
-}
-
-// zamienia male litery na duze, np. "4c" -> "4C"
-string SystemRezerwacji::naDuzeLitery(string tekst) const {
-    for (int i = 0; i < (int)tekst.size(); i++) {
-        tekst[i] = toupper((unsigned char)tekst[i]);
-    }
-    return tekst;
 }
 
 // szuka rezerwacji po numerze, zwraca jej miejsce w wektorze albo -1
@@ -38,15 +29,44 @@ vector<string> SystemRezerwacji::getTypyBiletow() const {
     return obiekt->getTypyBiletow();
 }
 
+string SystemRezerwacji::getPrzykladMiejsca() const {
+    return obiekt->getPrzykladMiejsca();
+}
+
+bool SystemRezerwacji::maWyborSektora() const {
+    return obiekt->maWyborSektora();
+}
+
+vector<string> SystemRezerwacji::getNazwySektorow() const {
+    return obiekt->getNazwySektorow();
+}
+
 // obiekt sam wie jak narysowac swoje miejsca (polimorfizm)
 void SystemRezerwacji::pokazMiejsca() const {
     obiekt->wyswietlMiejsca();
 }
 
-int SystemRezerwacji::zarezerwuj(string oznaczenie, string imieKlienta, string typBiletu) {
-    string kod = naDuzeLitery(oznaczenie);
+void SystemRezerwacji::pokazSektor(int sektor) const {
+    obiekt->wyswietlSektor(sektor);
+}
 
-    Miejsce* miejsce = obiekt->znajdzMiejsce(kod);
+string SystemRezerwacji::przygotujOznaczenie(string wpis, int sektor) const {
+    return obiekt->przygotujOznaczenie(wpis, sektor);
+}
+
+int SystemRezerwacji::sprawdzMiejsce(string oznaczenie) const {
+    const Miejsce* miejsce = obiekt->znajdzMiejsce(oznaczenie);
+    if (miejsce == nullptr) {
+        return 0; // takiego miejsca nie ma
+    }
+    if (miejsce->czyZajete()) {
+        return -1; // miejsce zajete
+    }
+    return 1; // wolne
+}
+
+int SystemRezerwacji::zarezerwuj(string oznaczenie, string imieKlienta, string typBiletu) {
+    Miejsce* miejsce = obiekt->znajdzMiejsce(oznaczenie);
     if (miejsce == nullptr) {
         return 0; // takiego miejsca nie ma
     }
@@ -57,7 +77,7 @@ int SystemRezerwacji::zarezerwuj(string oznaczenie, string imieKlienta, string t
     miejsce->zajmij();
 
     int numer = nastepnyNumer;
-    rezerwacje.push_back(Rezerwacja(numer, imieKlienta, kod, typBiletu));
+    rezerwacje.push_back(Rezerwacja(numer, imieKlienta, oznaczenie, typBiletu));
     nastepnyNumer++;
     return numer;
 }

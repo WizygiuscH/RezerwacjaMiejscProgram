@@ -65,20 +65,74 @@ string wybierzTypBiletu(const SystemRezerwacji& sr) {
     return bilety[wybor - 1];
 }
 
+// pokazuje sektory (stadion) i zwraca numer wybranego, albo -1 gdy uzytkownik chce wrocic
+int wybierzSektor(const SystemRezerwacji& sr) {
+    vector<string> sektory = sr.getNazwySektorow();
+
+    cout << "\nWybierz sektor:\n";
+    for (int i = 0; i < (int)sektory.size(); i++) {
+        cout << i + 1 << ". " << sektory[i] << "\n";
+    }
+    cout << "0. Wroc do menu\n";
+
+    int wybor = wczytajWybor(0, sektory.size());
+    return wybor - 1; // 0 (wroc) zamienia sie na -1
+}
+
+// pyta o miejsce az uzytkownik poda dobre i wolne
+// zly wpis od razu daje blad i prosi o poprawke
+// zwraca gotowe oznaczenie albo "" gdy uzytkownik wpisal 0 (wroc)
+string wybierzMiejsce(const SystemRezerwacji& sr, int sektor) {
+    while (true) {
+        string wpis = wczytajTekst("\nPodaj miejsce, np. " + sr.getPrzykladMiejsca() + " (0 = wroc do menu): ");
+
+        if (wpis == "0") {
+            return "";
+        }
+
+        string oznaczenie = sr.przygotujOznaczenie(wpis, sektor);
+        int stan = 0;
+        if (oznaczenie != "") {
+            stan = sr.sprawdzMiejsce(oznaczenie);
+        }
+
+        if (stan == 1) {
+            return oznaczenie; // dobre i wolne
+        } else if (stan == -1) {
+            cout << "BLAD: miejsce " << oznaczenie << " jest juz zajete, wybierz inne.\n";
+        } else {
+            cout << "BLAD: takie miejsce nie istnieje, sprobuj jeszcze raz.\n";
+        }
+    }
+}
+
 void zarezerwujMiejsce(SystemRezerwacji& sr) {
     sr.pokazMiejsca();
 
-    string miejsce = wczytajTekst("\nPodaj oznaczenie miejsca: ");
+    // na stadionie najpierw wybieramy sektor, a potem miejsce w nim
+    int sektor = -1;
+    if (sr.maWyborSektora()) {
+        sektor = wybierzSektor(sr);
+        if (sektor == -1) {
+            return; // uzytkownik wrocil do menu
+        }
+        sr.pokazSektor(sektor);
+    }
+
+    string oznaczenie = wybierzMiejsce(sr, sektor);
+    if (oznaczenie == "") {
+        return; // uzytkownik wrocil do menu
+    }
+
     string imie = wczytajTekst("Podaj imie klienta: ");
     string bilet = wybierzTypBiletu(sr);
 
-    int wynik = sr.zarezerwuj(miejsce, imie, bilet);
+    int wynik = sr.zarezerwuj(oznaczenie, imie, bilet);
     if (wynik > 0) {
-        cout << "\nZarezerwowano! Numer rezerwacji: " << wynik << "\n";
-    } else if (wynik == 0) {
-        cout << "\nTakie miejsce nie istnieje.\n";
+        cout << "\nZarezerwowano miejsce " << oznaczenie
+             << "! Numer rezerwacji: " << wynik << "\n";
     } else {
-        cout << "\nTo miejsce jest juz zajete.\n";
+        cout << "\nNie udalo sie zarezerwowac miejsca.\n";
     }
 }
 
@@ -129,31 +183,11 @@ void wyswietlMenu(string nazwaObiektu) {
     cout << "4. Pokaz rezerwacje\n";
     cout << "5. Szukaj rezerwacji po numerze\n";
     cout << "6. Zmien dane rezerwacji\n";
-    cout << "0. Wyjscie\n";
+    cout << "0. Wroc do wyboru miejsca\n";
 }
 
-int main() {
-    cout << "=== SYSTEM REZERWACJI ===\n";
-    cout << "Jaki typ miejsca chcesz zarezerwowac?\n";
-    cout << "1. Autobus\n";
-    cout << "2. Kino\n";
-    cout << "3. Stadion\n";
-
-    int typ = wczytajWybor(1, 3);
-
-    // wskaznik Obiekt* moze pokazywac na autobus, kino albo stadion (polimorfizm)
-    Obiekt* obiekt = nullptr;
-    if (typ == 1) {
-        obiekt = new Autobus();
-    } else if (typ == 2) {
-        obiekt = new Kino();
-    } else {
-        obiekt = new Stadion();
-    }
-
-    // system przejmuje obiekt i sam go usunie na koncu programu
-    SystemRezerwacji sr(obiekt);
-
+// menu jednego obiektu (autobusu, kina albo stadionu), 0 wraca do wyboru typu
+void obslugaObiektu(SystemRezerwacji& sr) {
     int wybor = -1;
     while (wybor != 0) {
         wyswietlMenu(sr.getNazwaObiektu());
@@ -166,6 +200,35 @@ int main() {
             case 4: sr.pokazRezerwacje(); break;
             case 5: szukajRezerwacji(sr); break;
             case 6: zmienDaneRezerwacji(sr); break;
+        }
+    }
+}
+
+int main() {
+    // wszystkie trzy systemy tworzymy od razu,
+    // zeby rezerwacje nie znikaly, gdy wrocimy do wyboru typu miejsca
+    // (wskaznik Obiekt* w systemie pokazuje na autobus, kino albo stadion - polimorfizm)
+    SystemRezerwacji autobus(new Autobus());
+    SystemRezerwacji kino(new Kino());
+    SystemRezerwacji stadion(new Stadion());
+
+    int typ = -1;
+    while (typ != 0) {
+        cout << "\n=== SYSTEM REZERWACJI ===\n";
+        cout << "Jaki typ miejsca chcesz zarezerwowac?\n";
+        cout << "1. Autobus\n";
+        cout << "2. Kino\n";
+        cout << "3. Stadion\n";
+        cout << "0. Wyjscie\n";
+
+        typ = wczytajWybor(0, 3);
+
+        if (typ == 1) {
+            obslugaObiektu(autobus);
+        } else if (typ == 2) {
+            obslugaObiektu(kino);
+        } else if (typ == 3) {
+            obslugaObiektu(stadion);
         }
     }
 

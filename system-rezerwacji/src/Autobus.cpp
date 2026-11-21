@@ -46,3 +46,19 @@ void Autobus::wyswietlMiejsca() const {
 
     cout << "\n[o] - wolne, [x] - zajete\n";
 }
+
+// "4a" i "a4" to to samo miejsce, zamieniamy je na postac "4A" (cyfra, potem litera)
+string Autobus::przygotujOznaczenie(string wpis, int) const {
+    string litery, cyfry;
+    if (!rozbijWpis(wpis, litery, cyfry)) {
+        return "";
+    }
+    if (litery.size() != 1 || cyfry.size() == 0) {
+        return ""; // musi byc dokladnie jedna litera i numer rzedu
+    }
+    return cyfry + litery;
+}
+
+string Autobus::getPrzykladMiejsca() const {
+    return "4C";
+}
