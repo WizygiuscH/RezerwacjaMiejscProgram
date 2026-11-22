@@ -17,6 +17,17 @@ int Obiekt::getLiczbaMiejsc() const {
     return miejsca.size();
 }
 
+// liczymy miejsca, ktore nie sa zajete
+int Obiekt::getLiczbaWolnychMiejsc() const {
+    int wolne = 0;
+    for (int i = 0; i < (int)miejsca.size(); i++) {
+        if (!miejsca[i].czyZajete()) {
+            wolne++;
+        }
+    }
+    return wolne;
+}
+
 // przechodzimy po wszystkich miejscach i szukamy takiego samego oznaczenia
 Miejsce* Obiekt::znajdzMiejsce(string oznaczenie) {
     Miejsce szukane(oznaczenie);

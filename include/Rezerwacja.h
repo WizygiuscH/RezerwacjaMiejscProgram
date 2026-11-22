@@ -24,7 +24,7 @@ public:
     string getTypBiletu() const;
     double getCena() const;
 
-    // settery (przydadza sie przy zmianie danych rezerwacji)
+    // settery
     void setImieKlienta(string imieKlienta);
     void setTypBiletu(string typBiletu);
     void setCena(double cena);

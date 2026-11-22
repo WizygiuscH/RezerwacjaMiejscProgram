@@ -27,6 +27,7 @@ public:
     string getNazwa() const;
     vector<string> getTypyBiletow() const;
     int getLiczbaMiejsc() const;
+    int getLiczbaWolnychMiejsc() const; // ile miejsc jest jeszcze wolnych
 
     // szuka miejsca po oznaczeniu (np. "4C"), zwraca nullptr gdy nie ma takiego
     Miejsce* znajdzMiejsce(string oznaczenie);

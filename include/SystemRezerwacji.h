@@ -30,6 +30,8 @@ public:
     SystemRezerwacji& operator=(const SystemRezerwacji&) = delete;
 
     string getNazwaObiektu() const;
+    int getLiczbaMiejsc() const;
+    int getLiczbaWolnychMiejsc() const;
     vector<string> getTypyBiletow() const;
     string getPrzykladMiejsca() const;
     double getCena(string oznaczenie, int typBiletu) const;

@@ -34,6 +34,14 @@ string SystemRezerwacji::getNazwaObiektu() const {
     return obiekt->getNazwa();
 }
 
+int SystemRezerwacji::getLiczbaMiejsc() const {
+    return obiekt->getLiczbaMiejsc();
+}
+
+int SystemRezerwacji::getLiczbaWolnychMiejsc() const {
+    return obiekt->getLiczbaWolnychMiejsc();
+}
+
 vector<string> SystemRezerwacji::getTypyBiletow() const {
     return obiekt->getTypyBiletow();
 }

@@ -158,8 +158,10 @@ void zmienDaneRezerwacji(SystemRezerwacji& sr) {
     cout << "\nDane rezerwacji zostaly zmienione:\n" << sr.znajdzRezerwacje(numer) << "\n";
 }
 
-void wyswietlMenu(string nazwaObiektu) {
-    cout << "\n=== SYSTEM REZERWACJI (" << nazwaObiektu << ") ===\n";
+void wyswietlMenu(const SystemRezerwacji& sr) {
+    cout << "\n=== SYSTEM REZERWACJI (" << sr.getNazwaObiektu() << ") ===\n";
+    cout << "Wolnych miejsc: " << sr.getLiczbaWolnychMiejsc()
+         << " z " << sr.getLiczbaMiejsc() << "\n";
     cout << "1. Pokaz miejsca\n";
     cout << "2. Zarezerwuj miejsce\n";
     cout << "3. Anuluj rezerwacje\n";
@@ -173,7 +175,7 @@ void wyswietlMenu(string nazwaObiektu) {
 void obslugaObiektu(SystemRezerwacji& sr) {
     int wybor = -1;
     while (wybor != 0) {
-        wyswietlMenu(sr.getNazwaObiektu());
+        wyswietlMenu(sr);
         wybor = wczytajWybor(0, 6);
 
         // kazda opcja moze rzucic wyjatek, wiec lapiemy go tutaj
