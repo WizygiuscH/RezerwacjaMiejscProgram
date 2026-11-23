@@ -24,7 +24,7 @@ Kino::Kino() : Obiekt("Kino") {
 }
 
 void Kino::wyswietlMiejsca() const {
-    cout << "\n=== KINO - plan miejsc ===\n";
+    cout << "\n-+- KINO - plan miejsc -+-\n";
     cout << "          E K R A N\n\n";
 
     // numery siedzen nad siatka

@@ -59,7 +59,7 @@ string wczytajTekst(string pytanie) {
 int wybierzTypBiletu(const SystemRezerwacji& sr, string oznaczenie) {
     vector<string> bilety = sr.getTypyBiletow();
 
-    cout << "\nWybierz rodzaj biletu:\n";
+    cout << "\nWybierz bilet:\n";
     for (int i = 0; i < (int)bilety.size(); i++) {
         cout << i + 1 << ". " << bilety[i] << " - " << sr.getCena(oznaczenie, i) << " zl\n";
     }
@@ -159,7 +159,7 @@ void zmienDaneRezerwacji(SystemRezerwacji& sr) {
 }
 
 void wyswietlMenu(const SystemRezerwacji& sr) {
-    cout << "\n=== SYSTEM REZERWACJI (" << sr.getNazwaObiektu() << ") ===\n";
+    cout << "\n -+- SYSTEM REZERWACJI (" << sr.getNazwaObiektu() << ") -+- \n";
     cout << "Wolnych miejsc: " << sr.getLiczbaWolnychMiejsc()
          << " z " << sr.getLiczbaMiejsc() << "\n";
     cout << "1. Pokaz miejsca\n";
@@ -210,8 +210,8 @@ int main() {
 
     int typ = -1;
     while (typ != 0) {
-        cout << "\n=== SYSTEM REZERWACJI ===\n";
-        cout << "Jaki typ miejsca chcesz zarezerwowac?\n";
+        cout << "\n -+- REZERWACJE -+- \n";
+        cout << "Gdzie chcesz zarezerwować miejsce?\n";
         cout << "1. Autobus\n";
         cout << "2. Kino\n";
         cout << "3. Stadion\n";
@@ -228,6 +228,6 @@ int main() {
         }
     }
 
-    cout << "\nDo widzenia!\n";
+    cout << "\nZakonczono program. Do widzenia!\n";
     return 0;
 }

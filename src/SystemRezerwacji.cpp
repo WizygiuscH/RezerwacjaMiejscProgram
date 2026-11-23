@@ -141,7 +141,7 @@ void SystemRezerwacji::pokazRezerwacje() const {
     }
 
     double suma = 0;
-    cout << "\n=== LISTA REZERWACJI ===\n";
+    cout << "\n-+- LISTA REZERWACJI -+-\n";
     for (int i = 0; i < (int)rezerwacje.size(); i++) {
         cout << rezerwacje[i] << "\n"; // nasz operator <<
         suma = suma + rezerwacje[i].getCena();

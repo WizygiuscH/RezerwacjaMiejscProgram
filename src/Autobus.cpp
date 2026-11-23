@@ -21,7 +21,7 @@ Autobus::Autobus() : Obiekt("Autobus") {
 }
 
 void Autobus::wyswietlMiejsca() const {
-    cout << "\n=== AUTOBUS - plan miejsc ===\n";
+    cout << "\n-+- AUTOBUS - plan miejsc -+-\n";
     cout << "          PRZOD\n";
     cout << "     A   B       C   D\n";
 

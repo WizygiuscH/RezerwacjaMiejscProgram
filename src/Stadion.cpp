@@ -121,7 +121,7 @@ void Stadion::wyswietlMiejsca() const {
 
     string przerwa(14, ' '); // miejsce na boisko miedzy sektorami
 
-    cout << "\n=== STADION - plan miejsc ===\n";
+    cout << "\n-+- STADION - plan miejsc -+-\n";
     cout << miejsca.size() << " miejsc, 5 sektorow\n\n";
 
     // gora: trybuna polnocna (na srodku)
